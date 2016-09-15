@@ -32,68 +32,11 @@ Within a single cloud service or an availability set, clusters of size A8 and A9
 
 * **MPI** - Intel MPI Library 5.x
 
-    >[AZURE.NOTE] Intel MPI 5.1 is already installed on the CentOS-based HPC images in the Marketplace. To use Intel MPI on SLES 12 HPC VMs, you must separately install it.
+    >[AZURE.NOTE] Intel MPI 5.1 is already installed on the CentOS-based HPC images in the Marketplace. To use Intel MPI on SLES 12 SP1 HPC VMs, you must separately install it, the packages are provided in /opt/intelMPI/intel_mpi_packages/, see [HPC Update for Azure…Finally](https://www.suse.com/communities/blog/hpc-update-azure-finally/) for details.
 
-Currently, Azure Linux RDMA drivers are only installed when you deploy RDMA-enabled SLES 12 HPC and CentOS HPC images from the Azure Marketplace. You can't install the drivers on other Linux VMs you deploy.
+Currently, Azure Linux RDMA drivers are only installed when you deploy RDMA-enabled SLES 12 SP1 or higher HPC and CentOS HPC images from the Azure Marketplace. You can't install the drivers on other Linux VMs you deploy.
 
->[AZURE.NOTE]On the CentOS-based HPC images from the Marketplace, kernel updates are disabled in the **yum** configuration file. This is because the Linux RDMA drivers are distributed as an RPM package, and driver updates might not work if the kernel is updated.
-
-
-## RDMA driver updates for SLES 12
-After you create a VM based on a SLES 12 HPC image, you need to update the RDMA drivers on the VMs for RDMA network connectivity. 
-
->[AZURE.IMPORTANT]This step is **required** for SLES 12 HPC VM deployments in all Azure regions. 
->This step isn't needed if you have deployed a CentOS-based 7.1 HPC or 6.5 HPC VM. 
-
-Before you update the drivers, stop all **zypper** processes or any processes that lock the SUSE repo databases on the VM. Otherwise the drivers might not update properly.  
-
-To update the Linux RDMA drivers on each VM, run one of the following sets of Azure CLI commands from your client computer.
-
-**For a SLES 12 HPC VM provisioned in the classic deployment model**
-
-```
-azure config mode asm
-
-azure vm extension set <vm-name> RDMAUpdateForLinux Microsoft.OSTCExtensions 0.1
-```
-
-**For a SLES 12 HPC VM provisioned in the Resource Manager deployment model**
-
-```
-azure config mode arm
-
-azure vm extension set <resource-group> <vm-name> RDMAUpdateForLinux Microsoft.OSTCExtensions 0.1
-```
-
->[AZURE.NOTE]It might take some time to install the drivers, and the command will return without output. After the update, your VM will restart and should be ready for use in several minutes.
-
-### Sample script for driver updates
-
-If you have a cluster of SLES 12 HPC VMs, you can script the driver update across all the nodes in your cluster. For example, the following script updates the drivers in an 8-node cluster.
-
-```
-
-#!/bin/bash -x
-
-# Define a prefix naming scheme for compute nodes, e.g., cluster11, cluster12, etc.
-
-vmname=cluster
-
-# Plug in appropriate numbers in the for loop below.
-
-for (( i=11; i<19; i++ )); do
-
-# For VMs created in the classic deployment model use the following command in your script.
-
-azure vm extension set $vmname$i RDMAUpdateForLinux Microsoft.OSTCExtensions 0.1
-
-# For VMs created in the Resource Manager deployment model, use the following command in your script.
-
-# azure vm extension set <resource-group> $vmname$i RDMAUpdateForLinux Microsoft.OSTCExtensions 0.1
-
-done
-
-```
+>[AZURE.NOTE]On the CentOS-based HPC images from the Marketplace, kernel updates are disabled in the **yum** configuration file. This is because the Linux RDMA drivers are distributed as an RPM package, and driver updates might not work if the kernel is updated. SLES based HPC images are set up such that kernel updates are possible.
 
 
 ## Considerations for HPC Pack and Linux
